@@ -55,33 +55,30 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-# Create a VPC with a unique CIDR block and a Name tag
 resource "aws_vpc" "main" {
   cidr_block = "172.15.0.0/16"
   enable_dns_support = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "flo-vpc"  # This is the name you want to assign to the VPC
+    Name = "flo-vpc"
   }
 }
 
-# Create subnets for the EC2 instance and RDS instance in different availability zones
 resource "aws_subnet" "subnet_a" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "172.15.2.0/24"  # Adjust this as needed
+  cidr_block              = "172.15.2.0/24"  
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "subnet_b" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "172.15.3.0/24"  # Adjust this as needed
+  cidr_block              = "172.15.3.0/24" 
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
 }
 
-# Create a subnet for the EC2 instance
 resource "aws_subnet" "main_subnet" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "172.15.1.0/24"
@@ -89,12 +86,10 @@ resource "aws_subnet" "main_subnet" {
   map_public_ip_on_launch = true
 }
 
-# Create an internet gateway for internet access
 resource "aws_internet_gateway" "main_igw" {
   vpc_id = aws_vpc.main.id
 }
 
-# Associate the subnet with the internet gateway
 resource "aws_route_table" "main_route_table" {
   vpc_id = aws_vpc.main.id
 
@@ -109,7 +104,6 @@ resource "aws_route_table_association" "main_route_association" {
   route_table_id = aws_route_table.main_route_table.id
 }
 
-# Create an EC2 instance
 resource "aws_instance" "target_node" {
   ami                    = "ami-0669774ba23136180"
   instance_type          = "t2.micro"
@@ -126,7 +120,6 @@ resource "aws_instance" "target_node" {
   }
 }
 
-# Create an Elastic IP and associate it with the EC2 instance
 resource "aws_eip" "public_ip" {
   instance = aws_instance.target_node.id
 }
@@ -136,7 +129,6 @@ resource "aws_key_pair" "deployer_key" {
   public_key = file("/home/flomihciu/devops/tfdocker/flo-east1.pub")
 }
 
-# Outputs
 output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = aws_instance.target_node.public_ip
