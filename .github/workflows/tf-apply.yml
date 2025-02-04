@@ -1,0 +1,46 @@
+name: Terraform Apply Infrastructure
+
+on:
+  push:
+    branches:
+      - stg
+  release:
+    types: [published]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+env:
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: us-east-1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.2"
+
+      - name: List Workspace Contents
+        run: ls -lah && ls -lah ~/
+
+      - name: Write SSH Private Key to File
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: List Workspace Contents
+        run: ls -lah && ls -lah ~/
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
